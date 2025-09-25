@@ -1,0 +1,126 @@
+package macrocontroller
+
+import (
+	"time"
+
+	"taz/modules/displaydata"
+	"taz/modules/engine"
+	"taz/modules/imagesearch"
+	"taz/modules/settingsmanager"
+	"taz/modules/windowmanager"
+
+	"github.com/go-vgo/robotgo"
+	"github.com/micmonay/keybd_event"
+)
+
+type MacroController struct {
+	Engine      *engine.ScriptEngine
+	windowX     int
+	windowY     int
+	windowW     int
+	windowH     int
+	Keyboard    keybd_event.KeyBonding
+	ImageSearch *imagesearch.ImageSearch
+}
+
+func NewController() *MacroController {
+	mc := &MacroController{}
+	mc.Engine = engine.NewEngine()
+	mc.Keyboard, _ = keybd_event.NewKeyBonding()
+	mc.ImageSearch = imagesearch.NewImageSearch(displaydata.IsRetinaDisplay())
+	return mc
+}
+
+func (mc *MacroController) PressKey(key int, duration time.Duration) {
+	mc.Keyboard.SetKeys(key)
+	mc.Keyboard.Press()
+	mc.Engine.Sleep(duration)
+	mc.Keyboard.Release()
+}
+
+func (mc *MacroController) RobloxWindowSetup() {
+	robloxPid, _ := windowmanager.GetRobloxPID()
+	mc.Engine.RunFuncNoReturn(func() { windowmanager.ActivateWindow(robloxPid) })
+	mc.Engine.RunFuncNoReturn(func() { windowmanager.SetFullscreen(robloxPid, false) })
+	mc.Engine.RunFuncNoReturn(func() { windowmanager.SetWindowBounds(robloxPid, 0, 0, 9999, 0) })
+	mc.Engine.Sleep(1 * time.Second)
+	mc.windowX, mc.windowY, mc.windowW, mc.windowH = windowmanager.GetRobloxWindowBounds()
+}
+
+func (mc *MacroController) ClickElement(filepath string, x int, y int, w int, h int) {
+	fx, fy := mc.ImageSearch.FindImageFileOnScreen(filepath, x, y, w, h, 0, true, false, true)
+	println(fx, fy)
+	robotgo.Move(fx, fy)
+	if fx >= 0 && fy >= 0 {
+		mc.Engine.RunFuncNoReturn(func() { robotgo.Move(fx, fy) })
+		mc.Engine.RunFuncNoReturn(func() { robotgo.Click() })
+	}
+}
+
+func (mc *MacroController) BuyFromShop(items []settingsmanager.BuyItemSettings) {
+	//buy from bottom up
+	mc.Engine.RunFuncNoReturn(func() { robotgo.Move(mc.windowX+mc.windowW/2, mc.windowY+mc.windowH/2) })
+	for range 20 {
+		mc.Engine.RunFuncNoReturn(func() { robotgo.ScrollDir(999, "down") })
+	}
+	mc.Engine.Sleep(500 * time.Millisecond)
+
+	var mouseY int
+	for i := len(items) - 1; i >= 0; i-- {
+		item := items[i]
+
+		//bottom 2 items are edge cases, mouse needs to specifically click on them
+		//otherwise, click the top to open the item
+		if i == len(items)-1 {
+			mouseY = mc.windowY + int(float64(mc.windowH)*0.73)
+		} else if i == len(items)-2 {
+			mouseY = mc.windowY + int(float64(mc.windowH)*0.51)
+		} else {
+			mouseY = mc.windowY + int(float64(mc.windowH)*0.33)
+		}
+		mc.Engine.RunFuncNoReturn(func() { robotgo.Move(mc.windowX+mc.windowW/2, mouseY) })
+		mc.Engine.RunFuncNoReturn(func() { robotgo.Click() })
+
+		var sleepTime time.Duration
+		if item.Enabled {
+			sleepTime = 600
+		} else {
+			sleepTime = 200
+		}
+		//scroll up near the top to reach the remaining 2 items
+		if i <= 2 {
+			mc.Engine.Sleep(400 * time.Millisecond)
+			robotgo.ScrollDir(80, "up")
+			sleepTime = max(sleepTime-400, 100)
+		}
+		mc.Engine.Sleep(sleepTime * time.Millisecond)
+
+		//check if item can be purchased
+		if !item.Enabled {
+			continue
+		}
+		fx, fy := mc.ImageSearch.FindImageFileOnScreen("images/buy_btn-retina.png", mc.windowX, mc.windowY, mc.windowW, mc.windowH, 0.1, false, false, true)
+		if fx >= 0 && fy >= 0 {
+			println(item.Name, " is available")
+			mc.Engine.RunFuncNoReturn(func() { robotgo.Move(fx+20, fy+20) })
+			for range 20 {
+				mc.Engine.RunFuncNoReturn(func() { robotgo.Click() })
+				mc.Engine.Sleep(30 * time.Millisecond)
+			}
+		}
+	}
+	mc.ClickElement("images/close_btn-retina.png", mc.windowX+mc.windowW/2, mc.windowY, mc.windowW/2, mc.windowH/2)
+}
+
+func (mc *MacroController) Macro() {
+	settings, _ := settingsmanager.LoadSettings()
+	mc.RobloxWindowSetup()
+
+	mc.ClickElement("images/seeds_btn-retina.png", mc.windowX, mc.windowY, mc.windowW, mc.windowH/2)
+	mc.Engine.Sleep(1 * time.Second)
+	mc.Engine.RunFuncNoReturn(func() { mc.PressKey(keybd_event.VK_E, 1*time.Second) })
+	mc.Engine.Sleep(1500 * time.Millisecond)
+
+	items := settings.GetSeedsToBuy()
+	mc.BuyFromShop(items)
+}

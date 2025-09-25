@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Taz GAG Macro</title>
+  <script type="module" crossorigin src="/assets/index.f4d6fb12.js"></script>
+  <link rel="stylesheet" href="/assets/index.2fb28fa0.css">
+</head>
+<body>
+    <div class="sidebar">
+        <span id="version-number"></span>
+        <div class="sidebar-section">
+            <div class="sidebar-label">Automation</div>
+            <div class="sidebar-item active" data-tab-for="seeds">Seeds</div>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-label">Configuration</div>
+            <div class="sidebar-item" data-tab-for="discord">Discord</div>
+        </div>
+    </div>
+    <main>
+        <div class="toolbar">
+            <h1 id="tab-title">Seeds</h1>
+            <div class="toolbar-actions">
+                <button class="start-btn show" id="start-btn">Start [F1]</button>
+                <div class="running-container">
+                    <button class="start-btn" id="toggle-pause-btn">Pause [F2]</button>
+                    <button class="stop-btn" id="stop-btn">Stop [F3]</button>
+                </div>
+            </div>
+        </div> 
+        <div class="tab-pane active" data-tab-name="seeds">
+            <div class="settings-group">
+                <div class="settings-group-title">Seeds</div> 
+                <div class="settings-row" data-setting-name="buy_carrot">
+                    <div class="setting-info">
+                        <div class="setting-title">Carrot</div>
+                        <div class="setting-desc">Buy carrots from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                <div class="settings-row" data-setting-name="buy_strawberry">
+                    <div class="setting-info">
+                        <div class="setting-title">Strawberry</div>
+                        <div class="setting-desc">Buy strawberries from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                <div class="settings-row" data-setting-name="buy_blueberry">
+                    <div class="setting-info">
+                        <div class="setting-title">Blueberry</div>
+                        <div class="setting-desc">Buy blueberries from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                <div class="settings-row" data-setting-name="buy_orange_tulip">
+                    <div class="setting-info">
+                        <div class="setting-title">Orange Tulip</div>
+                        <div class="setting-desc">Buy orange tulips from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                <div class="settings-row" data-setting-name="buy_tomato">
+                    <div class="setting-info">
+                        <div class="setting-title">Tomato</div>
+                        <div class="setting-desc">Buy tomatoes from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                <div class="settings-row" data-setting-name="buy_corn">
+                    <div class="setting-info">
+                        <div class="setting-title">Corn</div>
+                        <div class="setting-desc">Buy corn from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                <div class="settings-row" data-setting-name="buy_daffodil">
+                    <div class="setting-info">
+                        <div class="setting-title">Daffodil</div>
+                        <div class="setting-desc">Buy daffodils from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                <div class="settings-row" data-setting-name="buy_watermelon">
+                    <div class="setting-info">
+                        <div class="setting-title">Watermelon</div>
+                        <div class="setting-desc">Buy watermelons from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                <div class="settings-row" data-setting-name="buy_pumpkin">
+                    <div class="setting-info">
+                        <div class="setting-title">Pumpkin</div>
+                        <div class="setting-desc">Buy pumpkins from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                <div class="settings-row" data-setting-name="buy_apple">
+                    <div class="setting-info">
+                        <div class="setting-title">Apple</div>
+                        <div class="setting-desc">Buy apples from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                <div class="settings-row" data-setting-name="buy_bamboo">
+                    <div class="setting-info">
+                        <div class="setting-title">Bamboo</div>
+                        <div class="setting-desc">Buy bamboo from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                <div class="settings-row" data-setting-name="buy_coconut">
+                    <div class="setting-info">
+                        <div class="setting-title">Coconut</div>
+                        <div class="setting-desc">Buy coconuts from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                <div class="settings-row" data-setting-name="buy_cactus">
+                    <div class="setting-info">
+                        <div class="setting-title">Cactus</div>
+                        <div class="setting-desc">Buy cactus from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                <div class="settings-row" data-setting-name="buy_dragon_fruit">
+                    <div class="setting-info">
+                        <div class="setting-title">Dragon Fruit</div>
+                        <div class="setting-desc">Buy dragon fruits from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                <div class="settings-row" data-setting-name="buy_mango">
+                    <div class="setting-info">
+                        <div class="setting-title">Mango</div>
+                        <div class="setting-desc">Buy mangoes from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                <div class="settings-row" data-setting-name="buy_grape">
+                    <div class="setting-info">
+                        <div class="setting-title">Grape</div>
+                        <div class="setting-desc">Buy grapes from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                <div class="settings-row" data-setting-name="buy_mushroom">
+                    <div class="setting-info">
+                        <div class="setting-title">Mushroom</div>
+                        <div class="setting-desc">Buy mushrooms from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                <div class="settings-row" data-setting-name="buy_pepper">
+                    <div class="setting-info">
+                        <div class="setting-title">Pepper</div>
+                        <div class="setting-desc">Buy peppers from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                <div class="settings-row" data-setting-name="buy_cacao">
+                    <div class="setting-info">
+                        <div class="setting-title">Cacao</div>
+                        <div class="setting-desc">Buy cacao from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                <div class="settings-row" data-setting-name="buy_beanstalk">
+                    <div class="setting-info">
+                        <div class="setting-title">Beanstalk</div>
+                        <div class="setting-desc">Buy beanstalks from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                
+                <div class="settings-row" data-setting-name="buy_ember_lily">
+                    <div class="setting-info">
+                        <div class="setting-title">Ember Lily</div>
+                        <div class="setting-desc">Buy ember lilies from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                <div class="settings-row" data-setting-name="buy_sugar_apple">
+                    <div class="setting-info">
+                        <div class="setting-title">Sugar Apple</div>
+                        <div class="setting-desc">Buy sugar apples from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                <div class="settings-row" data-setting-name="buy_burning_bud">
+                    <div class="setting-info">
+                        <div class="setting-title">Burning Bud</div>
+                        <div class="setting-desc">Buy burning buds from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                <div class="settings-row" data-setting-name="buy_giant_pinecone">
+                    <div class="setting-info">
+                        <div class="setting-title">Giant Pinecone</div>
+                        <div class="setting-desc">Buy giant pinecones from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                <div class="settings-row" data-setting-name="buy_elder_strawberry">
+                    <div class="setting-info">
+                        <div class="setting-title">Elder Strawberry</div>
+                        <div class="setting-desc">Buy elder strawberries from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                <div class="settings-row" data-setting-name="buy_romanesco">
+                    <div class="setting-info">
+                        <div class="setting-title">Romanesco</div>
+                        <div class="setting-desc">Buy romanesco from the shop</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>                
+            </div>
+        </div>
+
+        <div class="tab-pane" data-tab-name="discord">
+            <div class="settings-group">
+                <div class="settings-group-title">Discord Webhook</div> 
+                <div class="settings-row" data-setting-name="enable_discord_webhook">
+                    <div class="setting-info">
+                        <div class="setting-title">Enable Webhook</div>
+                        <div class="setting-desc">Enable a discord webhook to receive logs via discord</div>
+                    </div>  
+                    <div class="setting-control">
+                        <div class="toggle setting-input"></div>
+                    </div>  
+                </div>
+                <div class="settings-row" data-setting-name="discord_webhook_url">
+                    <div class="setting-info">
+                        <div class="setting-title">Webhook URL</div>
+                        <div class="setting-desc">The URL of the discord webhook</div>
+                    </div>  
+                    <input type="text" class="setting-input" placeholder="Enter URL here...">
+                </div> 
+            </div>
+        </div>
+    </main> 
+    
+</body>
+</html>
