@@ -17,9 +17,12 @@ const (
 )
 
 type ScriptEngine struct {
-	state int32
-	mu    sync.Mutex
-	cond  *sync.Cond
+	state        int32
+	mu           sync.Mutex
+	cond         *sync.Cond
+	onResumeFunc func()
+	onPauseFunc  func()
+	onStopFunc   func()
 }
 
 func NewEngine() *ScriptEngine {
@@ -31,18 +34,36 @@ func NewEngine() *ScriptEngine {
 func (e *ScriptEngine) setState(s EngineState) { atomic.StoreInt32(&e.state, int32(s)) }
 func (e *ScriptEngine) GetState() EngineState  { return EngineState(atomic.LoadInt32(&e.state)) }
 
+func (e *ScriptEngine) SetOnStop(fn func()) {
+	e.onStopFunc = fn
+}
+
 func (e *ScriptEngine) Stop() {
 	if e.GetState() == Running || e.GetState() == Paused {
 		fmt.Println("Stopped")
 		e.setState(Stopped)
+		if e.onStopFunc != nil {
+			e.onStopFunc()
+		}
 	}
+}
+
+func (e *ScriptEngine) SetOnPause(fn func()) {
+	e.onPauseFunc = fn
 }
 
 func (e *ScriptEngine) Pause() {
 	if e.GetState() == Running {
 		fmt.Println("Paused")
 		e.setState(Paused)
+		if e.onPauseFunc != nil {
+			e.onPauseFunc()
+		}
 	}
+}
+
+func (e *ScriptEngine) SetOnResume(fn func()) {
+	e.onResumeFunc = fn
 }
 
 func (e *ScriptEngine) Resume() {
@@ -50,6 +71,9 @@ func (e *ScriptEngine) Resume() {
 		fmt.Println("Resumed")
 		e.setState(Running)
 		e.cond.Broadcast()
+		if e.onResumeFunc != nil {
+			e.onResumeFunc()
+		}
 	}
 }
 
@@ -87,7 +111,7 @@ func (e *ScriptEngine) RunFuncNoReturn(fn func()) {
 
 func (e *ScriptEngine) Start(fn func()) {
 	if e.GetState() == Idle || e.GetState() == Stopped {
-		fmt.Println("▶️ Starting macro")
+		fmt.Println("Starting macro")
 		e.setState(Running)
 
 		go func() {

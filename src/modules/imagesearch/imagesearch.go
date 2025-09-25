@@ -21,15 +21,21 @@ import (
 
 type ImageSearch struct {
 	RetinaDisplay bool
+	ScalingFactor int
 }
 
 func NewImageSearch(retinaDisplay bool) *ImageSearch {
 	is := &ImageSearch{}
 	is.RetinaDisplay = retinaDisplay
+	if retinaDisplay {
+		is.ScalingFactor = 2
+	} else {
+		is.ScalingFactor = 1
+	}
 	return is
 }
 
-func (*ImageSearch) FindImageFileOnScreen(path string, x int, y int, width int, height int, tolerance float64, returnCenter bool, screenCoords bool, includeStartingPoint bool) (int, int) {
+func (is *ImageSearch) FindImageFileOnScreen(path string, x int, y int, width int, height int, tolerance float64, returnCenter bool, screenCoords bool, includeStartingPoint bool) (int, int) {
 	needle := bitmap.Open(path)
 	defer robotgo.FreeBitmap(needle)
 
@@ -47,13 +53,13 @@ func (*ImageSearch) FindImageFileOnScreen(path string, x int, y int, width int, 
 
 	if returnCenter {
 		gbit := robotgo.ToBitmap(needle)
-		fx += gbit.Width / 2
-		fy += gbit.Height / 2
+		fx += gbit.Width / is.ScalingFactor
+		fy += gbit.Height / is.ScalingFactor
 	}
 
 	if !screenCoords {
-		fx /= 2
-		fy /= 2
+		fx /= is.ScalingFactor
+		fy /= is.ScalingFactor
 	}
 
 	if includeStartingPoint {

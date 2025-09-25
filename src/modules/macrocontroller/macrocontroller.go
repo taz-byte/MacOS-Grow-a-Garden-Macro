@@ -7,6 +7,7 @@ import (
 	"taz/modules/engine"
 	"taz/modules/imagesearch"
 	"taz/modules/settingsmanager"
+	"taz/modules/timingsmanager"
 	"taz/modules/windowmanager"
 
 	"github.com/go-vgo/robotgo"
@@ -26,6 +27,7 @@ type MacroController struct {
 func NewController() *MacroController {
 	mc := &MacroController{}
 	mc.Engine = engine.NewEngine()
+	mc.Engine.SetOnResume(mc.RobloxWindowSetup)
 	mc.Keyboard, _ = keybd_event.NewKeyBonding()
 	mc.ImageSearch = imagesearch.NewImageSearch(displaydata.IsRetinaDisplay())
 	return mc
@@ -47,13 +49,16 @@ func (mc *MacroController) RobloxWindowSetup() {
 	mc.windowX, mc.windowY, mc.windowW, mc.windowH = windowmanager.GetRobloxWindowBounds()
 }
 
-func (mc *MacroController) ClickElement(filepath string, x int, y int, w int, h int) {
-	fx, fy := mc.ImageSearch.FindImageFileOnScreen(filepath, x, y, w, h, 0, true, false, true)
-	println(fx, fy)
-	robotgo.Move(fx, fy)
-	if fx >= 0 && fy >= 0 {
-		mc.Engine.RunFuncNoReturn(func() { robotgo.Move(fx, fy) })
-		mc.Engine.RunFuncNoReturn(func() { robotgo.Click() })
+func (mc *MacroController) ClickElement(filePath string, maxAttempts int, x int, y int, w int, h int) {
+	for range maxAttempts {
+		fx, fy := mc.ImageSearch.FindImageFileOnScreen(filePath, x, y, w, h, 0.2, true, false, true)
+		robotgo.Move(fx, fy)
+		if fx >= 0 && fy >= 0 {
+			mc.Engine.RunFuncNoReturn(func() { robotgo.Move(fx, fy) })
+			mc.Engine.RunFuncNoReturn(func() { robotgo.Click() })
+			break
+		}
+		mc.Engine.Sleep(300 * time.Millisecond)
 	}
 }
 
@@ -109,18 +114,26 @@ func (mc *MacroController) BuyFromShop(items []settingsmanager.BuyItemSettings) 
 			}
 		}
 	}
-	mc.ClickElement("images/close_btn-retina.png", mc.windowX+mc.windowW/2, mc.windowY, mc.windowW/2, mc.windowH/2)
+	mc.ClickElement("images/close_btn-retina.png", 5, mc.windowX+mc.windowW/2, mc.windowY, mc.windowW/2, mc.windowH/2)
+	mc.Engine.Sleep(1000 * time.Millisecond)
 }
 
 func (mc *MacroController) Macro() {
 	settings, _ := settingsmanager.LoadSettings()
 	mc.RobloxWindowSetup()
+	mc.ClickElement("images/garden_btn-retina.png", 3, mc.windowX, mc.windowY, mc.windowW, mc.windowH/2)
 
-	mc.ClickElement("images/seeds_btn-retina.png", mc.windowX, mc.windowY, mc.windowW, mc.windowH/2)
-	mc.Engine.Sleep(1 * time.Second)
-	mc.Engine.RunFuncNoReturn(func() { mc.PressKey(keybd_event.VK_E, 1*time.Second) })
-	mc.Engine.Sleep(1500 * time.Millisecond)
-
-	items := settings.GetSeedsToBuy()
-	mc.BuyFromShop(items)
+	for {
+		if !timingsmanager.OnCooldown("SeedShop", 5*time.Minute) {
+			mc.ClickElement("images/seeds_btn-retina.png", 5, mc.windowX, mc.windowY, mc.windowW, mc.windowH/2)
+			mc.Engine.Sleep(1 * time.Second)
+			mc.Engine.RunFuncNoReturn(func() { mc.PressKey(keybd_event.VK_E, 1*time.Second) })
+			mc.Engine.Sleep(1500 * time.Millisecond)
+			items := settings.GetSeedsToBuy()
+			mc.BuyFromShop(items)
+			timingsmanager.UpdateObjectiveTime("SeedShop")
+			mc.ClickElement("images/garden_btn-retina.png", 3, mc.windowX, mc.windowY, mc.windowW, mc.windowH/2)
+		}
+		mc.Engine.Sleep(5 * time.Second)
+	}
 }
