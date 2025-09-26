@@ -1,6 +1,9 @@
 package imagesearch
 
 import (
+	"path/filepath"
+	"strings"
+
 	"github.com/go-vgo/robotgo"
 	"github.com/vcaesar/bitmap"
 )
@@ -36,6 +39,11 @@ func NewImageSearch(retinaDisplay bool) *ImageSearch {
 }
 
 func (is *ImageSearch) FindImageFileOnScreen(path string, x int, y int, width int, height int, tolerance float64, returnCenter bool, screenCoords bool, includeStartingPoint bool) (int, int) {
+	if is.RetinaDisplay {
+		ext := filepath.Ext(path)
+		no_ext := strings.TrimSuffix(path, ext)
+		path = no_ext + "-retina" + ext
+	}
 	needle := bitmap.Open(path)
 	defer robotgo.FreeBitmap(needle)
 

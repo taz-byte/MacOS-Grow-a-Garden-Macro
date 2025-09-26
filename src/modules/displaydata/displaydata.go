@@ -25,5 +25,10 @@ int isRetinaDisplay() {
 import "C"
 
 func IsRetinaDisplay() bool {
-	return C.isRetinaDisplay() == 1
+	isRetina := C.isRetinaDisplay() == 1
+	if isRetina {
+		println("retina")
+	}
+	println("nah")
+	return isRetina
 }

@@ -1,6 +1,7 @@
 package macrocontroller
 
 import (
+	"os"
 	"time"
 
 	"taz/modules/displaydata"
@@ -27,7 +28,17 @@ type MacroController struct {
 func NewController() *MacroController {
 	mc := &MacroController{}
 	mc.Engine = engine.NewEngine()
-	mc.Engine.SetOnResume(mc.RobloxWindowSetup)
+	mc.Engine.SetOnResume(func() {
+		mc.RobloxWindowSetup()
+	})
+	mc.Engine.SetOnStop(func() {
+		pid := os.Getpid()
+		windowmanager.ActivateWindow(pid)
+		mc.ReleaseInputs()
+	})
+	mc.Engine.SetOnPause(func() {
+		mc.ReleaseInputs()
+	})
 	mc.Keyboard, _ = keybd_event.NewKeyBonding()
 	mc.ImageSearch = imagesearch.NewImageSearch(displaydata.IsRetinaDisplay())
 	return mc
@@ -38,6 +49,12 @@ func (mc *MacroController) PressKey(key int, duration time.Duration) {
 	mc.Keyboard.Press()
 	mc.Engine.Sleep(duration)
 	mc.Keyboard.Release()
+}
+
+func (mc *MacroController) ReleaseInputs() {
+	mc.Keyboard.SetKeys(keybd_event.VK_W, keybd_event.VK_A, keybd_event.VK_S, keybd_event.VK_D, keybd_event.VK_E, keybd_event.VK_SPACE)
+	mc.Keyboard.Release()
+	robotgo.MouseUp()
 }
 
 func (mc *MacroController) RobloxWindowSetup() {
@@ -55,7 +72,9 @@ func (mc *MacroController) ClickElement(filePath string, maxAttempts int, x int,
 		robotgo.Move(fx, fy)
 		if fx >= 0 && fy >= 0 {
 			mc.Engine.RunFuncNoReturn(func() { robotgo.Move(fx, fy) })
-			mc.Engine.RunFuncNoReturn(func() { robotgo.Click() })
+			for range 2 {
+				mc.Engine.RunFuncNoReturn(func() { robotgo.Click() })
+			}
 			break
 		}
 		mc.Engine.Sleep(300 * time.Millisecond)
@@ -104,7 +123,7 @@ func (mc *MacroController) BuyFromShop(items []settingsmanager.BuyItemSettings) 
 		if !item.Enabled {
 			continue
 		}
-		fx, fy := mc.ImageSearch.FindImageFileOnScreen("images/buy_btn-retina.png", mc.windowX, mc.windowY, mc.windowW, mc.windowH, 0.1, false, false, true)
+		fx, fy := mc.ImageSearch.FindImageFileOnScreen("images/buy_btn.png", mc.windowX, mc.windowY, mc.windowW, mc.windowH, 0.1, false, false, true)
 		if fx >= 0 && fy >= 0 {
 			println(item.Name, " is available")
 			mc.Engine.RunFuncNoReturn(func() { robotgo.Move(fx+20, fy+20) })
@@ -114,26 +133,31 @@ func (mc *MacroController) BuyFromShop(items []settingsmanager.BuyItemSettings) 
 			}
 		}
 	}
-	mc.ClickElement("images/close_btn-retina.png", 5, mc.windowX+mc.windowW/2, mc.windowY, mc.windowW/2, mc.windowH/2)
+	mc.ClickElement("images/close_btn.png", 5, mc.windowX+mc.windowW/2, mc.windowY, mc.windowW/2, mc.windowH/2)
 	mc.Engine.Sleep(1000 * time.Millisecond)
 }
 
 func (mc *MacroController) Macro() {
 	settings, _ := settingsmanager.LoadSettings()
 	mc.RobloxWindowSetup()
-	mc.ClickElement("images/garden_btn-retina.png", 3, mc.windowX, mc.windowY, mc.windowW, mc.windowH/2)
+	mc.ClickElement("images/garden_btn.png", 3, mc.windowX, mc.windowY, mc.windowW, mc.windowH/2)
 
 	for {
-		if !timingsmanager.OnCooldown("SeedShop", 5*time.Minute) {
-			mc.ClickElement("images/seeds_btn-retina.png", 5, mc.windowX, mc.windowY, mc.windowW, mc.windowH/2)
+		now := time.Now()
+		currMinute := now.Minute()
+		currSecond := now.Second()
+		seeds := settings.GetSeedsToBuy()
+		if !settingsmanager.AllItemsToBuyAreDisabled(seeds) && ((currMinute%5 == 0 && currSecond > 10 && !timingsmanager.OnCooldown("SeedShop", 40*time.Second)) || !timingsmanager.OnCooldown("SeedShop", 5*time.Minute)) {
+			mc.ClickElement("images/seeds_btn.png", 5, mc.windowX, mc.windowY, mc.windowW, mc.windowH/2)
 			mc.Engine.Sleep(1 * time.Second)
 			mc.Engine.RunFuncNoReturn(func() { mc.PressKey(keybd_event.VK_E, 1*time.Second) })
 			mc.Engine.Sleep(1500 * time.Millisecond)
-			items := settings.GetSeedsToBuy()
-			mc.BuyFromShop(items)
+			mc.BuyFromShop(seeds)
 			timingsmanager.UpdateObjectiveTime("SeedShop")
-			mc.ClickElement("images/garden_btn-retina.png", 3, mc.windowX, mc.windowY, mc.windowW, mc.windowH/2)
+			mc.ClickElement("images/garden_btn.png", 3, mc.windowX, mc.windowY, mc.windowW, mc.windowH/2)
 		}
 		mc.Engine.Sleep(5 * time.Second)
+		mc.ClickElement("images/close_btn.png", 1, mc.windowX+mc.windowW/2, mc.windowY, mc.windowW/2, mc.windowH/2)
+		robotgo.Click()
 	}
 }

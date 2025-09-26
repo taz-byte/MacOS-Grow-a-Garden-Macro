@@ -75,6 +75,15 @@ func (s *Settings) GetSeedsToBuy() []BuyItemSettings {
 	}
 }
 
+func AllItemsToBuyAreDisabled(items []BuyItemSettings) bool {
+	for _, item := range items {
+		if item.Enabled {
+			return false
+		}
+	}
+	return true
+}
+
 func getSettingsPath() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
