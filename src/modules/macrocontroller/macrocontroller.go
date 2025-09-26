@@ -2,12 +2,15 @@ package macrocontroller
 
 import (
 	"os"
+	"strings"
 	"time"
 
-	"taz/modules/displaydata"
+	"taz/modules/customlogger"
 	"taz/modules/engine"
 	"taz/modules/imagesearch"
+	"taz/modules/macroinfo"
 	"taz/modules/settingsmanager"
+	"taz/modules/systeminfo"
 	"taz/modules/timingsmanager"
 	"taz/modules/windowmanager"
 
@@ -17,6 +20,7 @@ import (
 
 type MacroController struct {
 	Engine      *engine.ScriptEngine
+	Logger      *customlogger.Logger
 	windowX     int
 	windowY     int
 	windowW     int
@@ -30,17 +34,21 @@ func NewController() *MacroController {
 	mc.Engine = engine.NewEngine()
 	mc.Engine.SetOnResume(func() {
 		mc.RobloxWindowSetup()
+		mc.Logger.Log("Macro Resumed", "", "success")
 	})
 	mc.Engine.SetOnStop(func() {
 		pid := os.Getpid()
 		windowmanager.ActivateWindow(pid)
 		mc.ReleaseInputs()
+		mc.Logger.Log("Macro Stopped", "", "error")
 	})
 	mc.Engine.SetOnPause(func() {
 		mc.ReleaseInputs()
+		mc.Logger.Log("Macro Paused", "", "warning")
 	})
 	mc.Keyboard, _ = keybd_event.NewKeyBonding()
-	mc.ImageSearch = imagesearch.NewImageSearch(displaydata.IsRetinaDisplay())
+	mc.ImageSearch = imagesearch.NewImageSearch(systeminfo.IsRetinaDisplay())
+	mc.Logger = &customlogger.Logger{}
 	return mc
 }
 
@@ -81,7 +89,8 @@ func (mc *MacroController) ClickElement(filePath string, maxAttempts int, x int,
 	}
 }
 
-func (mc *MacroController) BuyFromShop(items []settingsmanager.BuyItemSettings) {
+func (mc *MacroController) BuyFromShop(items []settingsmanager.BuyItemSettings) []string {
+	var purchasedItems = []string{}
 	//buy from bottom up
 	mc.Engine.RunFuncNoReturn(func() { robotgo.Move(mc.windowX+mc.windowW/2, mc.windowY+mc.windowH/2) })
 	for range 20 {
@@ -125,20 +134,29 @@ func (mc *MacroController) BuyFromShop(items []settingsmanager.BuyItemSettings) 
 		}
 		fx, fy := mc.ImageSearch.FindImageFileOnScreen("images/buy_btn.png", mc.windowX, mc.windowY, mc.windowW, mc.windowH, 0.1, false, false, true)
 		if fx >= 0 && fy >= 0 {
-			println(item.Name, " is available")
 			mc.Engine.RunFuncNoReturn(func() { robotgo.Move(fx+20, fy+20) })
 			for range 20 {
 				mc.Engine.RunFuncNoReturn(func() { robotgo.Click() })
 				mc.Engine.Sleep(30 * time.Millisecond)
 			}
+			purchasedItems = append(purchasedItems, item.Name)
 		}
 	}
 	mc.ClickElement("images/close_btn.png", 5, mc.windowX+mc.windowW/2, mc.windowY, mc.windowW/2, mc.windowH/2)
 	mc.Engine.Sleep(1000 * time.Millisecond)
+	return purchasedItems
 }
 
 func (mc *MacroController) Macro() {
 	settings, _ := settingsmanager.LoadSettings()
+	mc.Logger.Settings = &settings
+	mc.Logger.SendWebhook("Taz Macro Started",
+		"**Macro Version:** "+macroinfo.Version+
+			"\n\n**System Info:**"+
+			"\nOS: "+systeminfo.GetOSInfo()+
+			"\nCPU Architecture: "+systeminfo.GetCPUArchitecture()+
+			"\nDisplay: "+systeminfo.GetDisplayType(),
+		"success")
 	mc.RobloxWindowSetup()
 	mc.ClickElement("images/garden_btn.png", 3, mc.windowX, mc.windowY, mc.windowW, mc.windowH/2)
 
@@ -148,11 +166,17 @@ func (mc *MacroController) Macro() {
 		currSecond := now.Second()
 		seeds := settings.GetSeedsToBuy()
 		if !settingsmanager.AllItemsToBuyAreDisabled(seeds) && ((currMinute%5 == 0 && currSecond > 10 && !timingsmanager.OnCooldown("SeedShop", 40*time.Second)) || !timingsmanager.OnCooldown("SeedShop", 5*time.Minute)) {
+			mc.Logger.Log("", "Going to Seed Shop", "regular")
 			mc.ClickElement("images/seeds_btn.png", 5, mc.windowX, mc.windowY, mc.windowW, mc.windowH/2)
 			mc.Engine.Sleep(1 * time.Second)
 			mc.Engine.RunFuncNoReturn(func() { mc.PressKey(keybd_event.VK_E, 1*time.Second) })
 			mc.Engine.Sleep(1500 * time.Millisecond)
-			mc.BuyFromShop(seeds)
+			purchasedSeeds := mc.BuyFromShop(seeds)
+			if len(purchasedSeeds) > 0 {
+				mc.Logger.Log("", "Bought Seeds:\n\n"+strings.Join(purchasedSeeds, "\n"), "complete")
+			} else {
+				mc.Logger.Log("", "Did not buy any seeds", "regular")
+			}
 			timingsmanager.UpdateObjectiveTime("SeedShop")
 			mc.ClickElement("images/garden_btn.png", 3, mc.windowX, mc.windowY, mc.windowW, mc.windowH/2)
 		}

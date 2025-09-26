@@ -4,6 +4,7 @@ import (
 	"context"
 	"taz/modules/engine"
 	"taz/modules/macrocontroller"
+	"taz/modules/macroinfo"
 	"taz/modules/settingsmanager"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -33,7 +34,7 @@ func (a *App) startup(ctx context.Context) {
 }
 
 func (a *App) GetVersion() string {
-	return version
+	return macroinfo.Version
 }
 
 func (a *App) SaveSettings(settings settingsmanager.Settings) {

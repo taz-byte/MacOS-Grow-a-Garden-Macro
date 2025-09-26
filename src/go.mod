@@ -3,6 +3,7 @@ module taz
 go 1.24.0
 
 require (
+	github.com/bensch777/discord-webhook-golang v0.0.6
 	github.com/go-vgo/robotgo v0.110.8
 	github.com/micmonay/keybd_event v1.1.2
 	github.com/robotn/gohook v0.42.2

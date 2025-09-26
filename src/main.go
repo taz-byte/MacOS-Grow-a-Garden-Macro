@@ -8,8 +8,6 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
 
-var version string = "v1.0.0"
-
 //go:embed all:frontend/dist
 var assets embed.FS
 
